@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+    <import resource="spring-config-batch.xml"></import>
+    <bean id="test-tasklet" class="org.example.tasklet.TestTasklet"></bean>
+
+    <batch:job id="job-test">
+        <batch:step id="step1">
+            <batch:tasklet ref="test-tasklet"></batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+    <bean id="test-job-details" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="org.example.tasklet.JobClassForDetails"></property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="jobName" value="job-test"/>
+                <entry key="jobLocator" value-ref="jobRegistry"/>
+                <entry key="jobLauncher" value-ref="jobLauncher"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="jobDetail" ref="test-job-details"></property>
+                    <property name="cronExpression" value="0/5 * * * * ?"></property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+</beans>
