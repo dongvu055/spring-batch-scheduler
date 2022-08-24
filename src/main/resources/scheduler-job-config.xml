@@ -4,19 +4,37 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
 
     <import resource="spring-config-batch.xml"></import>
-    <bean id="test-tasklet" class="org.example.tasklet.TestTasklet"></bean>
+    <bean id="test1-tasklet" class="org.example.tasklet.Test1Tasklet"></bean>
+    <bean id="test2-tasklet" class="org.example.tasklet.Test2Tasklet"></bean>
 
-    <batch:job id="job-test">
+    <batch:job id="job-test1">
         <batch:step id="step1">
-            <batch:tasklet ref="test-tasklet"></batch:tasklet>
+            <batch:tasklet ref="test1-tasklet"></batch:tasklet>
         </batch:step>
     </batch:job>
 
-    <bean id="test-job-details" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+    <batch:job id="job-test2">
+        <batch:step id="step2">
+            <batch:tasklet ref="test2-tasklet"></batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+    <bean id="test1-job-details" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.example.tasklet.JobClassForDetails"></property>
         <property name="jobDataAsMap">
             <map>
-                <entry key="jobName" value="job-test"/>
+                <entry key="jobName" value="job-test1"/>
+                <entry key="jobLocator" value-ref="jobRegistry"/>
+                <entry key="jobLauncher" value-ref="jobLauncher"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="test2-job-details" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="org.example.tasklet.JobClassForDetails"></property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="jobName" value="job-test2"/>
                 <entry key="jobLocator" value-ref="jobRegistry"/>
                 <entry key="jobLauncher" value-ref="jobLauncher"/>
             </map>
@@ -26,10 +44,16 @@
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-                    <property name="jobDetail" ref="test-job-details"></property>
+                <bean id="cronTrigger-test1" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="jobDetail" ref="test1-job-details"></property>
                     <property name="cronExpression" value="0/5 * * * * ?"></property>
                 </bean>
+
+                <bean id="cronTrigger-test2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="jobDetail" ref="test2-job-details"></property>
+                    <property name="cronExpression" value="0/5 * * * * ?"></property>
+                </bean>
+
             </list>
         </property>
     </bean>
